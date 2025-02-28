@@ -1,0 +1,43 @@
+{% extends 'authentification/base.html' %}
+
+{% block title %}Accueil{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+        <h1 class="display-4 mb-4">Bienvenue sur notre plateforme d'événements</h1>
+        
+        {% if user.is_authenticated %}
+            <div class="alert alert-success">
+                <h4>Bonjour {{ user.first_name }}!</h4>
+                {% if user.is_organizer %}
+                    <p>En tant qu'organisateur, vous pouvez gérer vos événements depuis votre tableau de bord!</p>
+                    <div class="d-grid gap-2 d-md-block">
+                        <a href="{% url 'events:dashboard' %}" class="btn btn-primary me-2">
+                            <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                        </a>
+                        <a href="{% url 'events:create_event' %}" class="btn btn-success">
+                            <i class="fas fa-plus-circle"></i> Créer un événement
+                        </a>
+                    </div>
+                {% elif user.is_participant %}
+                    <p>Découvrez les événements disponibles et inscrivez-vous!</p>
+                    <a href="{% url 'events:event_list' %}" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Parcourir les événements
+                    </a>
+                {% endif %}
+            </div>
+        {% else %}
+            <p class="lead mb-4">Connectez-vous ou inscrivez-vous pour participer aux événements!</p>
+            <div class="d-grid gap-2 d-md-block">
+                <a href="{% url 'signin' %}" class="btn btn-primary btn-lg me-md-2">
+                    <i class="fas fa-sign-in-alt"></i> Connexion
+                </a>
+                <a href="{% url 'signup' %}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-user-plus"></i> Inscription
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

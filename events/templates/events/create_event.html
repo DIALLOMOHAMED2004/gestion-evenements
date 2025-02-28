@@ -1,0 +1,141 @@
+{% extends 'authentification/base.html' %}
+{% load static %}
+
+{% block title %}Créer un événement{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-calendar-plus"></i> Créer un nouvel événement</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Titre de l'événement*</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description*</label>
+                            <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Image de l'événement</label>
+                            <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="location" class="form-label">Lieu*</label>
+                            <input type="text" class="form-control" id="location" name="location" required>
+                        </div>
+
+
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="start_date" class="form-label">Date et heure de début*</label>
+                                <input type="datetime-local" class="form-control flatpickr" id="start_date" name="start_date" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="end_date" class="form-label">Date et heure de fin*</label>
+                                <input type="datetime-local" class="form-control flatpickr" id="end_date" name="end_date" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="available_seats" class="form-label">Nombre de places disponibles*</label>
+                                <input type="number" class="form-control" id="available_seats" name="available_seats" min="1" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="event_type" class="form-label">Type d'événement*</label>
+                                <select class="form-select" id="event_type" name="event_type" required>
+                                    <option value="FREE">Gratuit</option>
+                                    <option value="PAID">Payant</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Catégorie*</label>
+                            <select class="form-select" id="category" name="category" required>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Visibilité de l'événement*</label>
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input" id="is_public" name="visibility" value="public" checked>
+                                <label class="form-check-label" for="is_public">Événement public</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input" id="is_private" name="visibility" value="private">
+                                <label class="form-check-label" for="is_private">Événement privé</label>
+                                <small class="form-text text-muted d-block">
+                                    Les événements privés sont accessibles uniquement via un lien d'invitation.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="ticket_price_container" style="display: none;">
+                            <label for="ticket_price" class="form-label">Prix du billet (€)*</label>
+                            <input type="number" class="form-control" id="ticket_price" name="ticket_price" min="0" step="0.01" value="0.00">
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Créer l'événement
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Configuration de Flatpickr pour les champs de date
+        flatpickr(".flatpickr", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            locale: "fr",
+            minDate: "today"
+        });
+
+        // Gestion de l'affichage du champ prix
+        const eventTypeSelect = document.getElementById('event_type');
+        const ticketPriceContainer = document.getElementById('ticket_price_container');
+        const ticketPriceInput = document.getElementById('ticket_price');
+
+        eventTypeSelect.addEventListener('change', function() {
+            if (this.value === 'PAID') {
+                ticketPriceContainer.style.display = 'block';
+                ticketPriceInput.required = true;
+            } else {
+                ticketPriceContainer.style.display = 'none';
+                ticketPriceInput.required = false;
+                ticketPriceInput.value = '0.00';
+            }
+        });
+    });
+</script>
+{% endblock %}

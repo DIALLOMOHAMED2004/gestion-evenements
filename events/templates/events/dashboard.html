@@ -1,0 +1,136 @@
+{% extends 'authentification/base.html' %}
+
+{% block title %}Tableau de bord - Organisateur{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Tableau de bord</h1>
+
+    <!-- Statistiques globales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Total Événements</h5>
+                    <p class="card-text display-4">{{ total_events }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Total Inscrits</h5>
+                    <p class="card-text display-4">{{ total_registrations }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Billets Vendus</h5>
+                    <p class="card-text display-4">{{ total_paid_tickets }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Revenu Total</h5>
+                    <p class="card-text display-4">{{ total_revenue }}€</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Actions rapides</h5>
+                    <a href="{% url 'events:create_event' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Créer un événement
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des événements -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Mes événements</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Événement</th>
+                            <th>Date</th>
+                            <th>Places disponibles</th>
+                            <th>Inscrits</th>
+                            <th>Revenus</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in events %}
+                        <tr>
+                            <td>
+                                {% if event.image %}
+                                <img src="{{ event.image.url }}" alt="" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
+                                {% endif %}
+                                <a href="{% url 'events:event_detail' event.id %}">{{ event.title }}</a>
+                            </td>
+                            <td>{{ event.start_date|date:"d M Y H:i" }}</td>
+                            <td>{{ event.remaining_seats }}/{{ event.available_seats }}</td>
+                            <td>{{ event.registrations.count }}</td>
+                            <td>
+                                {% if event.event_type == 'PAID' %}
+                                {{ event.total_revenue }}€
+                                {% else %}
+                                Gratuit
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if event.start_date > now %}
+                                <span class="badge bg-success">À venir</span>
+                                {% elif event.end_date < now %}
+                                <span class="badge bg-secondary">Terminé</span>
+                                {% else %}
+                                <span class="badge bg-primary">En cours</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'events:event_detail' event.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'events:edit_event' event.id %}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'events:delete_event' event.id %}" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">
+                                <p class="my-3">Vous n'avez pas encore créé d'événements.</p>
+                                <a href="{% url 'events:create_event' %}" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Créer mon premier événement
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

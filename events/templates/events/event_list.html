@@ -1,0 +1,87 @@
+{% extends 'authentification/base.html' %}
+
+{% block title %}Liste des événements{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Événements à venir</h2>
+
+    <!-- Filtres -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="category" class="form-label">Catégorie</label>
+                    <select name="category" id="category" class="form-select">
+                        <option value="">Toutes les catégories</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if selected_category == category.id %}selected{% endif %}>{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="location" class="form-label">Lieu</label>
+                    <input type="text" class="form-control" id="location" name="location" value="{{ selected_location }}" placeholder="Filtrer par lieu">
+                </div>
+                <div class="col-md-3">
+                    <label for="date" class="form-label">Date</label>
+                    <input type="date" class="form-control" id="date" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for event in events %}
+        <div class="col">
+            <div class="card h-100">
+                {% if event.image %}
+                <img src="{{ event.image.url }}" class="card-img-top" alt="{{ event.title }}" style="height: 200px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ event.title }}</h5>
+                    <p class="card-text">{{ event.description|truncatewords:20 }}</p>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <i class="fas fa-map-marker-alt"></i> {{ event.location }}<br>
+                            <i class="fas fa-calendar"></i> {{ event.start_date|date:"d M Y H:i" }}<br>
+                            <i class="fas fa-ticket-alt"></i> 
+                            {% if event.event_type == 'FREE' %}
+                                Gratuit
+                            {% else %}
+                                {{ event.ticket_price }} €
+                            {% endif %}
+                        </small>
+                    </p>
+                    <a href="{% url 'events:event_detail' event.id %}" class="btn btn-primary">Voir les détails</a>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">Places restantes : {{ event.remaining_seats }}</small>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">Aucun événement trouvé.</div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="mt-4">
+        {% if events.has_other_pages %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    {% if events.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ events.previous_page_number }}">Précédent</a></li>
+                    {% endif %}
+                    <li class="page-item disabled"><span class="page-link">Page {{ events.number }} sur {{ events.paginator.num_pages }}</span></li>
+                    {% if events.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ events.next_page_number }}">Suivant</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

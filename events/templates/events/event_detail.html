@@ -1,0 +1,152 @@
+{% extends 'authentification/base.html' %}
+
+{% block title %}Détails de l'événement{% endblock %}
+
+{% block extra_js %}
+<script>
+function copyInvitationLink() {
+    var copyText = document.getElementById("invitation-link");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    document.execCommand("copy");
+    
+    var button = event.target;
+    var originalText = button.innerHTML;
+    button.innerHTML = "Copié !";
+    setTimeout(function() {
+        button.innerHTML = originalText;
+    }, 2000);
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Colonne gauche : Image et détails principaux -->
+        <div class="col-md-8">
+            {% if event.image %}
+            <div class="mb-4">
+                <img src="{{ event.image.url }}" alt="Image de l'événement" class="img-fluid rounded" style="max-height: 400px; width: 100%; object-fit: cover;">
+            </div>
+            {% endif %}
+            
+            <h2 class="mb-4">{{ event.title }}</h2>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Description</h5>
+                    <p class="card-text">{{ event.description }}</p>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Informations</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-map-marker-alt"></i> <strong>Lieu:</strong> {{ event.location }}</li>
+                                <li><i class="fas fa-calendar"></i> <strong>Début:</strong> {{ event.start_date|date:"d M Y H:i" }}</li>
+                                <li><i class="fas fa-calendar-check"></i> <strong>Fin:</strong> {{ event.end_date|date:"d M Y H:i" }}</li>
+                                <li><i class="fas fa-user-friends"></i> <strong>Places disponibles:</strong> {{ event.remaining_seats }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Détails</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-ticket-alt"></i> <strong>Type:</strong> {{ event.get_event_type_display }}</li>
+                                {% if event.event_type == 'PAID' %}
+                                <li><i class="fas fa-euro-sign"></i> <strong>Prix:</strong> {{ event.ticket_price }} €</li>
+                                {% endif %}
+                                <li><i class="fas fa-lock{% if not event.is_private %}-open{% endif %}"></i> <strong>Visibilité:</strong> {% if event.is_private %}Privé{% else %}Public{% endif %}</li>
+                                <li><i class="fas fa-user"></i> <strong>Organisateur:</strong> {{ event.organizer.get_full_name }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Colonne droite : Actions et statut -->
+        <div class="col-md-4">
+
+            <!-- Carte d'action -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Statut de l'inscription</h5>
+                    
+                    {% if is_registered %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> Vous êtes inscrit à cet événement
+                    </div>
+                    {% elif event.is_full %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-circle"></i> Événement complet
+                    </div>
+                    {% else %}
+                    <form method="post" action="{% url 'events:event_register' event.id %}">
+                        {% csrf_token %}
+                        {% if event.event_type == 'PAID' %}
+                        <p class="mb-3">
+                            <strong>Prix du billet :</strong> {{ event.ticket_price }} €
+                        </p>
+                        {% endif %}
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                            {% if event.event_type == 'PAID' %}
+                            <i class="fas fa-shopping-cart"></i> Acheter un billet
+                            {% else %}
+                            <i class="fas fa-check"></i> S'inscrire gratuitement
+                            {% endif %}
+                        </button>
+                    </form>
+                    {% endif %}
+                    
+                    {% if event.remaining_seats > 0 and not is_registered %}
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i> 
+                        Il reste {{ event.remaining_seats }} place{% if event.remaining_seats > 1 %}s{% endif %} disponible{% if event.remaining_seats > 1 %}s{% endif %}
+                    </small>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if event.organizer == request.user %}
+            <!-- Carte d'administration -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Administration</h5>
+                    
+                    {% if event.is_private %}
+                    <div class="mb-3">
+                        <h6>Lien d'invitation</h6>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="invitation-link" 
+                                   value="{{ request.scheme }}://{{ request.get_host }}{% url 'events:event_detail_invite' event.id event.invitation_link %}" readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyInvitationLink()">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">Partagez ce lien pour inviter des participants</small>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'events:edit_event' event.id %}" class="btn btn-outline-primary">
+                            <i class="fas fa-edit"></i> Modifier l'événement
+                        </a>
+                        <a href="{% url 'events:delete_event' event.id %}" class="btn btn-outline-danger">
+                            <i class="fas fa-trash"></i> Supprimer l'événement
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

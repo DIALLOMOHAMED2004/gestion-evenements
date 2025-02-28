@@ -1,0 +1,58 @@
+{% extends 'authentification/base.html' %}
+
+{% block title %}Inscription{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-user-plus"></i> Inscription</h4>
+            </div>
+            <div class="card-body">
+                <form action="/signup" method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Nom d'utilisateur</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                        <small class="text-muted">5-10 caractères, alphanumériques uniquement</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="firstname" class="form-label">Prénom</label>
+                        <input type="text" class="form-control" id="firstname" name="firstname" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="lastname" class="form-label">Nom</label>
+                        <input type="text" class="form-control" id="lastname" name="lastname" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Mot de passe</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="comfirmpwd" class="form-label">Confirmer le mot de passe</label>
+                        <input type="password" class="form-control" id="comfirmpwd" name="comfirmpwd" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-user-plus"></i> S'inscrire
+                    </button>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                Déjà inscrit? <a href="{% url 'signin' %}">Connectez-vous</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
